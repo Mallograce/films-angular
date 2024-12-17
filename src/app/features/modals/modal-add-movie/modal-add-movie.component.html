@@ -1,1 +1,59 @@
-<h2 mat-dialog-title>Добавить </h2>
+<h2 mat-dialog-title>{{ 'modal.name' | translate }}</h2>
+<mat-dialog-content class="add-movie-form">
+    <form #movieForm="ngForm">
+        <mat-form-field appearance="outline">
+            <mat-label>{{ 'modal.title' | translate}}</mat-label>
+            <input matInput
+                   type="text"
+                   [(ngModel)]="newMovie.title"
+                   name="title"
+                   required />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>{{ 'modal.genre' | translate }}</mat-label>
+            <input matInput
+                   type="text"
+                   [(ngModel)]="genreInput"
+                   name="genre"/>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>{{ 'modal.releaseYear' | translate }}</mat-label>
+            <input matInput
+                   type="number"
+                   [(ngModel)]="newMovie.releaseYear"
+                   name="releaseYear" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>{{ 'modal.director' | translate }}</mat-label>
+            <input matInput
+                   type="text"
+                   [(ngModel)]="newMovie.director"
+                   name="director" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>{{ 'modal.actors' | translate }}</mat-label>
+            <input matInput
+                   type="text"
+                   [(ngModel)]="actorsInput"
+                   name="actors"/>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>{{ 'modal.annotation' | translate }}</mat-label>
+            <textarea matInput
+                      type="text"
+                      [(ngModel)]="newMovie.annotation"
+                      name="annotation"></textarea>
+        </mat-form-field>
+
+        <input type="file" (change)="onImageUpload($event)" />
+    </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close>{{ 'modal.cancel' | translate}}</button>
+    <button mat-button color="primary" (click)="onAddMovie()">{{ 'modal.add' | translate }}</button>
+</mat-dialog-actions>

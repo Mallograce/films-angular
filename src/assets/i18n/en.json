@@ -1,0 +1,14 @@
+{
+  "Add": "Add",
+  "modal": {
+    "name": "Add new movie",
+    "title": "Title",
+    "genre": "Genre",
+    "releaseYear": "ReleaseYear",
+    "director": "Director",
+    "actors": "Actors",
+    "annotation": "Annotation",
+    "cancel": "Cancel",
+    "add": "Add"
+  }
+}

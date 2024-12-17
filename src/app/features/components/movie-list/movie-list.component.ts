@@ -4,12 +4,16 @@ import { Movie } from '../../../core/services/movie/movie.interface';
 import { MatDialog } from '@angular/material/dialog';
 import { ModalAddMovieComponent } from '../../modals/modal-add-movie/modal-add-movie.component';
 import { MatButton } from '@angular/material/button';
+import { MovieItemComponent } from '../movie-item/movie-item.component';
+import { NgForOf } from '@angular/common';
 
 @Component({
   selector: 'app-movie-list',
   standalone: true,
   imports: [
-    MatButton
+    MatButton,
+    MovieItemComponent,
+    NgForOf
   ],
   templateUrl: './movie-list.component.html',
   styleUrl: './movie-list.component.scss'
@@ -21,7 +25,7 @@ export class MovieListComponent implements OnInit {
     private dialog: MatDialog,
   ) { }
   
-  private movies: Movie[] = [];
+  movies: Movie[] = [];
   private searchTerm: string = '';
   
   ngOnInit() {
@@ -35,6 +39,10 @@ export class MovieListComponent implements OnInit {
         this.movieS.addMovie(newMovie);
       }
     })
+  }
+  
+  deleteMovie(id: number) {
+    this.movieS.deleteMovie(id);
   }
   
   protected readonly addEventListener = addEventListener;

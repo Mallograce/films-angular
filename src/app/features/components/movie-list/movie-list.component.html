@@ -1,7 +1,13 @@
-
-
-
 <button
     mat-stroked-button
-    (click)="openAddMovie()"
-    >Добавить новый фильм</button>
+    (click)="openAddMovie()">
+    Добавить новый фильм
+</button>
+
+<div class="movies-grid">
+    <app-movie-item
+            *ngFor="let movie of movies"
+            [movie]="movie"
+            (delete)="deleteMovie(movie.id)">
+    </app-movie-item>
+</div>
