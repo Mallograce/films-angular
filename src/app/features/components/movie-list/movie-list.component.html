@@ -1,13 +1,54 @@
-<button
-    mat-stroked-button
-    (click)="openAddMovie()">
-    Добавить новый фильм
-</button>
+<mat-sidenav-container class="sidenav-container">
+    <!-- Боковая панель -->
+    <mat-sidenav #sidenav>
+        <button mat-button (click)="switchLanguage('ru')">
+            {{ 'Russian' | translate }}
+        </button>
+        <button mat-button (click)="switchLanguage('en')">
+            {{ 'English' | translate }}
+        </button>
+    </mat-sidenav>
 
-<div class="movies-grid">
-    <app-movie-item
-            *ngFor="let movie of movies"
-            [movie]="movie"
-            (delete)="deleteMovie(movie.id)">
-    </app-movie-item>
-</div>
+    <mat-sidenav-content>
+        <div class="main-content">
+            <div class="menu-section">
+                <button mat-icon-button (click)="sidenav.toggle()" class="menu-button">
+                    <mat-icon>menu</mat-icon>
+                </button>
+            </div>
+            <div class="content-section">
+                <div class="header">
+                    <mat-form-field appearance="outline" class="search-input">
+                        <mat-label>{{ 'MovieSearch' | translate }}</mat-label>
+                        <input matInput [(ngModel)]="searchTerm" (input)="onSearch()"
+                               placeholder="{{ 'InputPlaceholder' | translate }}"/>
+                    </mat-form-field>
+
+                    <!-- Список жанров -->
+                    <mat-chip-listbox class="genre-filter"
+                                      [multiple]="true"
+                                      [(ngModel)]="selectedGenres">
+                        <mat-chip *ngFor="let genre of genres"
+                                  [value]="genre.id"
+                                  (click)="toggleGenre(genre.id)"
+                                  color="primary">{{ genre.name | translate }}</mat-chip>
+                    </mat-chip-listbox>
+                </div>
+
+                <div class="movies-grid">
+                    <div class="add-movie-card" (click)="openAddMovie()">
+                        <mat-icon class="add-icon">add</mat-icon>
+                        <p>{{ 'AddNewMovie' | translate }}</p>
+                    </div>
+
+                    <!-- Карточки фильмов -->
+                    <app-movie-item
+                            *ngFor="let movie of filteredMovies"
+                            [movie]="movie"
+                            (delete)="deleteMovie(movie.id)">
+                    </app-movie-item>
+                </div>
+            </div>
+        </div>
+    </mat-sidenav-content>
+</mat-sidenav-container>

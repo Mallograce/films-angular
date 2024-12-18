@@ -3,6 +3,8 @@ import { MatCard, MatCardActions, MatCardContent, MatCardImage } from '@angular/
 import { MatButton } from '@angular/material/button';
 import { Movie } from '../../../core/services/movie/movie.interface';
 import { MovieService } from '../../../core/services/movie/movie.service';
+import { TranslatePipe } from '@ngx-translate/core';
+import { NgOptimizedImage } from '@angular/common';
 
 @Component({
   selector: 'app-movie-item',
@@ -12,7 +14,9 @@ import { MovieService } from '../../../core/services/movie/movie.service';
 		MatCardContent,
 		MatCardImage,
 		MatCardActions,
-		MatButton
+		MatButton,
+		TranslatePipe,
+		NgOptimizedImage
 	],
   templateUrl: './movie-item.component.html',
   styleUrl: './movie-item.component.scss'

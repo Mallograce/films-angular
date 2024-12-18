@@ -1,32 +1,50 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { Movie } from './movie.interface';
+import { Movie, MOVIES_MOCK } from './movie.interface';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MovieService {
 
-  constructor() { }
+  constructor() {
+    this.loadMovies();
+  }
   
-  private movies: Movie[] = [
-    {
-      id: 1,
-      title: 'Матрица',
-      genre: ['Фантастика'],
-      releaseYear: 1996,
-      director: 'Вачовски',
-      actors: ['Киану Ривз', 'Лоренс Фишбёрн'],
-      annotation: 'Жизнь Томаса Андерсона разделена на две части: Хакер Нео узнает, что его мир — виртуальный. Выдающийся экшен, доказавший, что зрелищное кино может быть умным',
-      createdYear: new Date(),
-      updatedYear: new Date(),
-    }
-  ]
-  
+  private movies: Movie[] = MOVIES_MOCK;
   private moviesSubject$ = new BehaviorSubject<Movie[]>(this.movies);
+  private genres: Map<number, string> = new Map([
+    [1, 'Фантастика'],
+    [2, 'Триллер'],
+    [3, 'Драма'],
+    [4, 'Комедия'],
+    [5, 'Фэнтези'],
+    [6, 'Экшен'],
+    [7, 'Криминал'],
+    [8, 'Мультфильм'],
+  ]);
+  
+  /**
+   * Метод загрузки списка фильмов из localStorage
+   */
+  private loadMovies() {
+    const savedMovies = localStorage.getItem('movies');
+    if (savedMovies) {
+      this.movies = JSON.parse(savedMovies);
+      this.moviesSubject$.next(this.movies);
+    }
+  }
+  
+  private saveMoviesLocalStorage() {
+    localStorage.setItem('movies', JSON.stringify(this.movies));
+  }
   
   getMovies(): Observable<Movie[]> {
     return this.moviesSubject$.asObservable()
+  }
+  
+  getGenresArray(): { id: number; name: string }[] {
+    return Array.from(this.genres, ([id, name]) => ({ id, name }));
   }
   
   addMovie(movie: Movie) {
@@ -35,9 +53,25 @@ export class MovieService {
     movie.updatedYear = new Date();
     this.movies.push(movie);
     this.moviesSubject$.next(this.movies);
+    this.saveMoviesLocalStorage();
   }
   
+  /**
+   * Метод удаления фильма просто по фильтрации
+   */
   deleteMovie(id: number) {
-    
+    this.movies = this.movies.filter(movie => movie.id !== id);
+    this.moviesSubject$.next(this.movies);
+    this.saveMoviesLocalStorage();
   }
+  
+  getGenreIdByName(name: string): number | undefined {
+    for (const [id, genreName] of this.genres.entries()) {
+      if (genreName === name) {
+        return id;
+      }
+    }
+    return undefined;
+  }
+  
 }

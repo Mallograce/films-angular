@@ -1,5 +1,10 @@
 {
   "Add": "Add",
+  "Russian": "Russian",
+  "English": "English",
+  "AddNewMovie": "Add new movie",
+  "MovieSearch": "Movie Search",
+  "InputPlaceholder": "Enter the name, director or actor",
   "modal": {
     "name": "Add new movie",
     "title": "Title",
@@ -10,5 +15,9 @@
     "annotation": "Annotation",
     "cancel": "Cancel",
     "add": "Add"
+  },
+  "movieItem": {
+    "edit": "Edit",
+    "delete": "Delete"
   }
 }
