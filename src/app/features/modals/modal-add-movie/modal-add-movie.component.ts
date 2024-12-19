@@ -1,17 +1,20 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, Inject, OnInit, ViewChild } from '@angular/core';
 import { Movie } from '../../../core/services/movie/movie.interface';
 import {
+  MAT_DIALOG_DATA,
   MatDialogActions,
   MatDialogClose,
   MatDialogContent,
   MatDialogRef,
   MatDialogTitle
 } from '@angular/material/dialog';
-import { MatFormField, MatLabel } from '@angular/material/form-field';
+import { MatError, MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-modal-add-movie',
@@ -26,31 +29,127 @@ import { TranslatePipe } from '@ngx-translate/core';
     MatButton,
     MatDialogClose,
     MatLabel,
-    TranslatePipe
+    TranslatePipe,
+    MatProgressSpinner,
+    MatError
   ],
   templateUrl: './modal-add-movie.component.html',
   styleUrl: './modal-add-movie.component.scss'
 })
-export class ModalAddMovieComponent {
+export class ModalAddMovieComponent implements OnInit {
+  
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>; // Ссылка на инпут загрузки фото
   
   constructor(
+    private matSnackBar: MatSnackBar,
+    private translateS: TranslateService,
     private dialogRef: MatDialogRef<ModalAddMovieComponent>,
-  ) { }
+    @Inject(MAT_DIALOG_DATA) public data: Partial<Movie> | null
+  ) {}
   
   newMovie: Partial<Movie> = {};
   genreInput: string = '';
   actorsInput: string = '';
   imageFile: string = '';
+  isEditMode: boolean = false; // Флаг для изменения кнопки модалки (save, edit)
+  isUploading: boolean = false; // Флаг для отображения спиннера
   
-  onImageUpload(event: Event) {
-  
+  ngOnInit(): void {
+    /**
+     * Если происходит передача данных при редактировании фильма,
+     * то ставим режим редактирования isEditMode
+     */
+    if (this.data) {
+      this.newMovie = { ...this.data };
+      this.genreInput = this.data.genre?.join(', ') || '';
+      this.actorsInput = this.data.actors?.join(', ') || '';
+      this.imageFile = this.data.image || '';
+      this.isEditMode = true;
+    }
   }
+  
+  /**
+   * Геттер для валидации кнопки добавления/изменения фильмов
+   * (Заполнены ли все обязательные поля)
+   */
+  get isFormValid() {
+    return (
+      this.newMovie.title && this.newMovie.title.trim().length > 0
+      && this.genreInput && this.genreInput.trim().length > 0
+      && this.newMovie.director && this.newMovie.director.trim().length > 0
+      && this.actorsInput && this.actorsInput.trim().length > 0
+    )
+  }
+  
+  /**
+   * Метод загрузки фотографии и преобразования в Data URL
+   * isUploading - состояние спиннера во время загрузки
+   * @param event - ивент загрузки файла
+   */
+  onImageUpload(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (file) {
+      this.isUploading = true;
+      console.log(this.isUploading)
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.imageFile = reader.result as string;
+        this.newMovie.image = this.imageFile;
+        this.isUploading = false;
+      };
+      reader.onerror = () => {
+        this.isUploading = false;
+      }
+      reader.readAsDataURL(file);
+    }
+  }
+  
+  /**
+   * Метод добавления нового фильма
+   * Формируется объект фильма, показывается уведомление через matSnackBar
+   */
   onAddMovie() {
     this.newMovie.genre = this.genreInput.split(',').map(word => word.trim());
     this.newMovie.actors = this.actorsInput.split(',').map(word => word.trim());
     this.newMovie.image = this.imageFile;
     this.newMovie.createdYear = new Date();
     this.newMovie.updatedYear = new Date();
+    this.matSnackBar.dismiss(); // Закрываем прошлый снэкбар, чтобы не было наложений
+    this.matSnackBar.open(
+      this.translateS.instant('modal.snackBar.newMovie',
+        {
+          createdYear: this.newMovie.createdYear.toLocaleString()
+        }),
+      undefined,
+      { duration: 4000, horizontalPosition: 'center', verticalPosition: 'bottom' }
+    );
     this.dialogRef.close(this.newMovie);
+  }
+  
+  /**
+   * Метод обновления/изменения текущего фильма
+   * Обновляется объект фильма, показывается уведомление через matSnackBar
+   */
+  onEditMovie() {
+    this.newMovie.genre = this.genreInput.split(',').map(word => word.trim());
+    this.newMovie.actors = this.actorsInput.split(',').map(word => word.trim());
+    this.newMovie.updatedYear = new Date();
+    this.matSnackBar.dismiss();
+    this.matSnackBar.open(
+      this.translateS.instant('modal.snackBar.updateMovie',
+        {
+          updatedYear: this.newMovie.updatedYear.toLocaleString()
+        }),
+      undefined,
+      { duration: 4000, horizontalPosition: 'center', verticalPosition: 'bottom' }
+    );
+    this.dialogRef.close(this.newMovie);
+  }
+  
+  /**
+   * Триггер для открытия окна выбора файла img
+   */
+  triggerImageUpload(): void {
+    this.fileInput.nativeElement.click();
   }
 }

@@ -12,8 +12,8 @@ export class MovieService {
   }
   
   private movies: Movie[] = MOVIES_MOCK;
-  private moviesSubject$ = new BehaviorSubject<Movie[]>(this.movies);
-  private genres: Map<number, string> = new Map([
+  private moviesSubject$ = new BehaviorSubject<Movie[]>(this.movies) // Поток фильмов
+  private genres: Map<number, string> = new Map([ // Список жанров с их id
     [1, 'Фантастика'],
     [2, 'Триллер'],
     [3, 'Драма'],
@@ -24,8 +24,13 @@ export class MovieService {
     [8, 'Мультфильм'],
   ]);
   
+  getMovies(): Observable<Movie[]> {
+    return this.moviesSubject$.asObservable()
+  }
+  
   /**
    * Метод загрузки списка фильмов из localStorage
+   * Используется начальный список фильмов (MOVIES_MOCK)
    */
   private loadMovies() {
     const savedMovies = localStorage.getItem('movies');
@@ -35,14 +40,16 @@ export class MovieService {
     }
   }
   
+  /**
+   * Сохраняет текущий список фильмов в localStorage
+   */
   private saveMoviesLocalStorage() {
     localStorage.setItem('movies', JSON.stringify(this.movies));
   }
   
-  getMovies(): Observable<Movie[]> {
-    return this.moviesSubject$.asObservable()
-  }
-  
+  /**
+   * Метод получения списка жанров в виде массива объектов
+   */
   getGenresArray(): { id: number; name: string }[] {
     return Array.from(this.genres, ([id, name]) => ({ id, name }));
   }
@@ -57,7 +64,7 @@ export class MovieService {
   }
   
   /**
-   * Метод удаления фильма просто по фильтрации
+   * Метод удаления фильма по ID
    */
   deleteMovie(id: number) {
     this.movies = this.movies.filter(movie => movie.id !== id);
@@ -65,6 +72,23 @@ export class MovieService {
     this.saveMoviesLocalStorage();
   }
   
+  /**
+   * Метод редактирования выбранного фильма
+   * Устанавливаем новую дату обновления
+   * @param updatedMovie - выбранный фильм
+   */
+  editMovie(updatedMovie: Movie): void {
+    const index = this.movies.findIndex(movie => movie.id === updatedMovie.id);
+    if (index !== -1) { // Если фильм найден
+      this.movies[index] = { ...updatedMovie, updatedYear: new Date() };
+      this.moviesSubject$.next(this.movies);
+      this.saveMoviesLocalStorage();
+    }
+  }
+  
+  /**
+   * Возвращаем id жанра по его названию
+   */
   getGenreIdByName(name: string): number | undefined {
     for (const [id, genreName] of this.genres.entries()) {
       if (genreName === name) {

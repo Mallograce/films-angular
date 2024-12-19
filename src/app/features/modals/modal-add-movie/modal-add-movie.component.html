@@ -1,59 +1,106 @@
-<h2 mat-dialog-title>{{ 'modal.name' | translate }}</h2>
+<div class="header">
+    <h2 mat-dialog-title>{{ (isEditMode ? 'modal.editName' : 'modal.addName') | translate }}</h2>
+    <div class="image-upload-section" (click)="triggerImageUpload()">
+        @if (isUploading) {
+            <mat-spinner
+                    diameter="60"
+                    class="spinner"></mat-spinner>
+        } @else if (imageFile) {
+            <ng-container>
+                <img [src]="imageFile" class="movie-image" alt="img"/>
+            </ng-container>
+        } @else {
+            <p>{{ (isEditMode ? 'modal.editImage' : 'modal.addImage')  | translate }}</p>
+        }
+        <input type="file" class="hidden-file-input" #fileInput (change)="onImageUpload($event)"/>
+    </div>
+</div>
+
 <mat-dialog-content class="add-movie-form">
-    <form #movieForm="ngForm">
-        <mat-form-field appearance="outline">
-            <mat-label>{{ 'modal.title' | translate}}</mat-label>
-            <input matInput
-                   type="text"
-                   [(ngModel)]="newMovie.title"
-                   name="title"
-                   required />
-        </mat-form-field>
+    @if (isUploading) {
+        <mat-spinner
+            diameter="40"
+        ></mat-spinner>
+    }
+    <form>
+        <div class="form-grid">
+            <mat-form-field appearance="outline">
+                <mat-label>{{ 'modal.title' | translate }}</mat-label>
+                <input matInput
+                       type="text"
+                       [(ngModel)]="newMovie.title"
+                       name="title"
+                       required/>
+                @if (!newMovie.title?.length) {
+                    <mat-error>{{ 'modal.requiredField' | translate }}</mat-error>
+                }
+            </mat-form-field>
 
-        <mat-form-field appearance="outline">
-            <mat-label>{{ 'modal.genre' | translate }}</mat-label>
-            <input matInput
-                   type="text"
-                   [(ngModel)]="genreInput"
-                   name="genre"/>
-        </mat-form-field>
+            <mat-form-field appearance="outline">
+                <mat-label>{{ 'modal.genre' | translate }}</mat-label>
+                <input matInput
+                       type="text"
+                       [(ngModel)]="genreInput"
+                       name="genre"
+                       required/>
+                @if (!genreInput.length) {
+                    <mat-error>{{ 'modal.requiredField' | translate }}</mat-error>
+                }
+            </mat-form-field>
 
-        <mat-form-field appearance="outline">
-            <mat-label>{{ 'modal.releaseYear' | translate }}</mat-label>
-            <input matInput
-                   type="number"
-                   [(ngModel)]="newMovie.releaseYear"
-                   name="releaseYear" />
-        </mat-form-field>
+            <mat-form-field appearance="outline">
+                <mat-label>{{ 'modal.releaseYear' | translate }}</mat-label>
+                <input matInput
+                       type="number"
+                       [(ngModel)]="newMovie.releaseYear"
+                       name="releaseYear"/>
+            </mat-form-field>
 
-        <mat-form-field appearance="outline">
-            <mat-label>{{ 'modal.director' | translate }}</mat-label>
-            <input matInput
-                   type="text"
-                   [(ngModel)]="newMovie.director"
-                   name="director" />
-        </mat-form-field>
+            <mat-form-field appearance="outline">
+                <mat-label>{{ 'modal.director' | translate }}</mat-label>
+                <input matInput
+                       type="text"
+                       [(ngModel)]="newMovie.director"
+                       name="director"
+                       required/>
+                @if (!newMovie.director?.length) {
+                    <mat-error>{{ 'modal.requiredField' | translate }}</mat-error>
+                }
+            </mat-form-field>
 
-        <mat-form-field appearance="outline">
-            <mat-label>{{ 'modal.actors' | translate }}</mat-label>
-            <input matInput
-                   type="text"
-                   [(ngModel)]="actorsInput"
-                   name="actors"/>
-        </mat-form-field>
+            <mat-form-field appearance="outline">
+                <mat-label>{{ 'modal.actors' | translate }}</mat-label>
+                <input matInput
+                       type="text"
+                       [(ngModel)]="actorsInput"
+                       name="actors"
+                       required/>
+                @if (!actorsInput.length) {
+                    <mat-error>{{ 'modal.requiredField' | translate }}</mat-error>
+                }
+            </mat-form-field>
 
-        <mat-form-field appearance="outline">
-            <mat-label>{{ 'modal.annotation' | translate }}</mat-label>
-            <textarea matInput
-                      type="text"
-                      [(ngModel)]="newMovie.annotation"
-                      name="annotation"></textarea>
-        </mat-form-field>
-
-        <input type="file" (change)="onImageUpload($event)" />
+            <mat-form-field appearance="outline">
+                <mat-label>{{ 'modal.annotation' | translate }}</mat-label>
+                <textarea matInput
+                          type="text"
+                          [(ngModel)]="newMovie.annotation"
+                          name="annotation"></textarea>
+            </mat-form-field>
+        </div>
     </form>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
-    <button mat-button mat-dialog-close>{{ 'modal.cancel' | translate}}</button>
-    <button mat-button color="primary" (click)="onAddMovie()">{{ 'modal.add' | translate }}</button>
+    @if (isEditMode) {
+        <button mat-button
+                (click)="onEditMovie()"
+                [disabled]="!isFormValid"
+        >{{ 'modal.save' | translate }}</button>
+    } @else {
+        <button mat-button
+                (click)="onAddMovie()"
+                [disabled]="!isFormValid"
+        >{{ 'modal.add' | translate }}</button>
+    }
+    <button mat-button mat-dialog-close>{{ 'modal.cancel' | translate }}</button>
 </mat-dialog-actions>

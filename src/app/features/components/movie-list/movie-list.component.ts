@@ -13,6 +13,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { MatSidenav, MatSidenavContainer, MatSidenavContent } from '@angular/material/sidenav';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatChip, MatChipListbox } from '@angular/material/chips';
+import { MatDivider } from '@angular/material/divider';
 
 @Component({
   selector: 'app-movie-list',
@@ -32,7 +33,8 @@ import { MatChip, MatChipListbox } from '@angular/material/chips';
     MatButton,
     MatIconButton,
     MatChipListbox,
-    MatChip
+    MatChip,
+    MatDivider
   ],
   templateUrl: './movie-list.component.html',
   styleUrl: './movie-list.component.scss'
@@ -51,6 +53,9 @@ export class MovieListComponent implements OnInit, OnDestroy {
   genres: { id: number; name: string }[] = []; // Жанры
   selectedGenres: Set<number> = new Set<number>(); // Выбранные жанры
   
+  /**
+   * Загружаем список фильмов и жанров при открытии страницы
+   */
   ngOnInit() {
     this.movieS.getMovies().subscribe(movies => {
       this.movies = movies;
@@ -71,8 +76,12 @@ export class MovieListComponent implements OnInit, OnDestroy {
     this.translateS.use(language);
   }
   
+  /**
+   * Открываем модальное окно для добавления нового фильма
+   * После закрытия модального окна добавляется новый фильм
+   */
   openAddMovie() {
-    const dialogRef = this.dialog.open(ModalAddMovieComponent);
+    const dialogRef = this.dialog.open(ModalAddMovieComponent, { width: '600px' });
     dialogRef.afterClosed().subscribe((newMovie: Movie) => {
       if (newMovie) {
         this.movieS.addMovie(newMovie);
@@ -80,29 +89,49 @@ export class MovieListComponent implements OnInit, OnDestroy {
     })
   }
   
+  /**
+   * Вызываем метод удаления фильма из сервиса
+   */
   deleteMovie(id: number) {
     this.movieS.deleteMovie(id);
   }
   
+  /**
+   * Вызываем метод редактирования фильма из сервиса
+   */
+  editMovie(updatedMovie: Movie) {
+    this.movieS.editMovie(updatedMovie);
+  }
+  
+  /**
+   * Фильтруем список фильмов на основе поиска
+   */
   onSearch() {
     this.applyFilters();
   }
   
+  /**
+   * Добавляем или удаляем жанр
+   */
   toggleGenre(genreId: number) {
     if (this.selectedGenres.has(genreId)) {
       this.selectedGenres.delete(genreId);
     } else {
       this.selectedGenres.add(genreId);
     }
-    this.applyFilters();
+    this.applyFilters(); // Вызываем фильтрацию из инпута
   }
   
+  /**
+   * Метод фильтрации поиска
+   * Фильтруем фильмы по наименованию, режиссеру, актерам, аннотации
+   */
   applyFilters() {
-    const searchFilter = this.searchTerm.trim().toLowerCase();
+    const searchFilter = this.searchTerm.toLowerCase().trim(); // Поле поиска в нижнем регистре
     
     this.filteredMovies = this.movies.filter(movie => {
       const matchesSearch =
-        searchFilter.length < 3 ||
+        searchFilter.length < 3 || // Начинаем фильтрацию от 3 букв
         movie.title.toLowerCase().includes(searchFilter) ||
         movie.director.toLowerCase().includes(searchFilter) ||
         movie.actors.some((actor) => actor.toLowerCase().includes(searchFilter)) ||
@@ -110,8 +139,8 @@ export class MovieListComponent implements OnInit, OnDestroy {
       
       const matchesGenres =
         this.selectedGenres.size === 0 ||
-        movie.genre.some(gen => {
-          const genreId = this.movieS.getGenreIdByName(gen);
+        movie.genre.some(genre => { // Есть ли хотя бы один жанр фильма, который соответствует выбранным жанрам
+          const genreId = this.movieS.getGenreIdByName(genre);
           return genreId !== undefined && this.selectedGenres.has(genreId);
         });
       return matchesSearch && matchesGenres;

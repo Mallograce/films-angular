@@ -1,0 +1,76 @@
+.add-movie-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.image-upload-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px dashed gray;
+  border-radius: 8px;
+  width: 250px;
+  height: 150px;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.3s ease;
+
+  &:hover {
+    background-color: white;
+    border-color: black;
+  }
+
+  .spinner {
+    position: absolute;
+  }
+
+  .movie-image {
+    width: 250px;
+    height: 150px;
+    border-radius: 8px;
+    object-fit: cover;
+  }
+
+  p {
+    font-size: 14px;
+    color: gray;
+
+  }
+}
+
+.form-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  justify-content: center;
+  width: 100%;
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+.hidden-file-input {
+  display: none;
+}
+
+.form-field {
+  width: 100%;
+  mat-label {
+    color: gray;
+  }
+
+  mat-input-element {
+    font-size: 14px;
+    padding: 0.5rem;
+  }
+}

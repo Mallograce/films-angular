@@ -5,8 +5,12 @@
   "AddNewMovie": "Добавить новый фильм",
   "MovieSearch": "Поиск фильмов",
   "InputPlaceholder": "Введите название, режиссера или актера",
+  "ChangeLanguage": "Изменить язык",
   "modal": {
-    "name": "Добавить новый фильм",
+    "editName": "Изменить фильм",
+    "addName": "Добавить новый фильм",
+    "editImage": "Изменить изображение",
+    "addImage": "Добавить изображение",
     "title": "Название",
     "genre": "Жанр",
     "releaseYear": "Год выпуска",
@@ -14,7 +18,13 @@
     "actors": "Актеры",
     "annotation": "Аннотация",
     "cancel": "Отмена",
-    "add": "Добавить"
+    "add": "Добавить",
+    "save": "Сохранить",
+    "requiredField": "Обязательное поле",
+    "snackBar": {
+      "newMovie": "Фильм создан, дата создания: {{createdYear}}",
+      "updateMovie": "Фильм обновлен, дата обновления: {{updatedYear}}"
+    }
   },
   "movieItem": {
     "edit": "Изменить",

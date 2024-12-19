@@ -5,8 +5,12 @@
   "AddNewMovie": "Add new movie",
   "MovieSearch": "Movie Search",
   "InputPlaceholder": "Enter the name, director or actor",
+  "ChangeLanguage": "Change Language",
   "modal": {
-    "name": "Add new movie",
+    "editName": "Edit movie",
+    "addName": "Add new movie",
+    "editImage": "Edit image",
+    "addImage": "Add image",
     "title": "Title",
     "genre": "Genre",
     "releaseYear": "ReleaseYear",
@@ -14,7 +18,13 @@
     "actors": "Actors",
     "annotation": "Annotation",
     "cancel": "Cancel",
-    "add": "Add"
+    "add": "Add",
+    "save": "Save",
+    "requiredField": "Required Field",
+    "snackBar": {
+      "newMovie": "The film was created, date of creation: {{createdYear}}",
+      "updateMovie": "The movie is updated, date of update: {{updatedYear}}"
+    }
   },
   "movieItem": {
     "edit": "Edit",

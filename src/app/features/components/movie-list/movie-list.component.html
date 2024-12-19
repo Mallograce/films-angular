@@ -1,6 +1,7 @@
 <mat-sidenav-container class="sidenav-container">
     <!-- Боковая панель -->
     <mat-sidenav #sidenav>
+        <h2>{{ 'ChangeLanguage' | translate }}</h2>
         <button mat-button (click)="switchLanguage('ru')">
             {{ 'Russian' | translate }}
         </button>
@@ -31,8 +32,15 @@
                         <mat-chip *ngFor="let genre of genres"
                                   [value]="genre.id"
                                   (click)="toggleGenre(genre.id)"
-                                  color="primary">{{ genre.name | translate }}</mat-chip>
+                                  [class.active]="selectedGenres.has(genre.id)"
+                                  class="genre-chip">
+                            {{ genre.name | translate }}
+                            @if (selectedGenres.has(genre.id)) {
+                                <mat-icon class="chip-icon">done</mat-icon>
+                            }
+                        </mat-chip>
                     </mat-chip-listbox>
+                    <mat-divider class="genre-divider"></mat-divider>
                 </div>
 
                 <div class="movies-grid">
@@ -42,11 +50,13 @@
                     </div>
 
                     <!-- Карточки фильмов -->
-                    <app-movie-item
-                            *ngFor="let movie of filteredMovies"
-                            [movie]="movie"
-                            (delete)="deleteMovie(movie.id)">
-                    </app-movie-item>
+                    @for (movie of filteredMovies; track movie) {
+                        <app-movie-item
+                                [movie]="movie"
+                                (delete)="deleteMovie(movie.id)"
+                                (edit)="editMovie($event)">
+                        </app-movie-item>
+                    }
                 </div>
             </div>
         </div>
