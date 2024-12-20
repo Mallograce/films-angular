@@ -17,11 +17,6 @@
 </div>
 
 <mat-dialog-content class="add-movie-form">
-    @if (isUploading) {
-        <mat-spinner
-            diameter="40"
-        ></mat-spinner>
-    }
     <form>
         <div class="form-grid">
             <mat-form-field appearance="outline">
@@ -38,11 +33,16 @@
 
             <mat-form-field appearance="outline">
                 <mat-label>{{ 'modal.genre' | translate }}</mat-label>
-                <input matInput
-                       type="text"
-                       [(ngModel)]="genreInput"
+                <mat-select multiple
+                       [(ngModel)]="selectedGenres"
                        name="genre"
-                       required/>
+                       required>
+                    @for (genre of genres; track genre.id) {
+                        <mat-option [value]="genre.id">
+                            {{ genre.name | translate }}
+                        </mat-option>
+                    }
+                </mat-select>
                 @if (!genreInput.length) {
                     <mat-error>{{ 'modal.requiredField' | translate }}</mat-error>
                 }

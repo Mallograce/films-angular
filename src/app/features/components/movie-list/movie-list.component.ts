@@ -1,19 +1,26 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MovieService } from '../../../core/services/movie/movie.service';
 import { Movie } from '../../../core/services/movie/movie.interface';
 import { MatDialog } from '@angular/material/dialog';
 import { ModalAddMovieComponent } from '../../modals/modal-add-movie/modal-add-movie.component';
 import { MovieItemComponent } from '../movie-item/movie-item.component';
-import { NgForOf } from '@angular/common';
-import { MatFormField, MatLabel } from '@angular/material/form-field';
+import { NgForOf, NgIf } from '@angular/common';
+import { MatFormField, MatFormFieldModule, MatLabel } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
-import { MatInput } from '@angular/material/input';
+import { MatInput, MatInputModule } from '@angular/material/input';
 import { MatIcon } from '@angular/material/icon';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { MatSidenav, MatSidenavContainer, MatSidenavContent } from '@angular/material/sidenav';
 import { MatButton, MatIconButton } from '@angular/material/button';
-import { MatChip, MatChipListbox } from '@angular/material/chips';
-import { MatDivider } from '@angular/material/divider';
+import {
+  MatDatepicker,
+  MatDatepickerInput,
+  MatDatepickerModule,
+  MatDatepickerToggle
+} from '@angular/material/datepicker';
+import { MatOption } from '@angular/material/autocomplete';
+import { MatSelect } from '@angular/material/select';
+import { MatNativeDateModule } from '@angular/material/core';
 
 @Component({
   selector: 'app-movie-list',
@@ -32,26 +39,38 @@ import { MatDivider } from '@angular/material/divider';
     MatSidenavContainer,
     MatButton,
     MatIconButton,
-    MatChipListbox,
-    MatChip,
-    MatDivider
+    MatDatepicker,
+    MatDatepickerToggle,
+    MatDatepickerInput,
+    MatOption,
+    MatSelect,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatFormFieldModule,
+    MatInputModule,
+    NgIf,
   ],
   templateUrl: './movie-list.component.html',
   styleUrl: './movie-list.component.scss'
 })
-export class MovieListComponent implements OnInit, OnDestroy {
+export class MovieListComponent implements OnInit {
   
   constructor(
     private movieS: MovieService,
     private dialog: MatDialog,
-    private translateS: TranslateService
+    private translateS: TranslateService,
   ) { }
   
   movies: Movie[] = []; // Фильмы
   filteredMovies: Movie[] = []; // Отфильтрованные фильмы
   searchTerm: string = '';
   genres: { id: number; name: string }[] = []; // Жанры
-  selectedGenres: Set<number> = new Set<number>(); // Выбранные жанры
+  selectedGenres: number[] = []; // Выбранные жанры
+  
+  releaseYears: number[] = [];
+  selectedYear: number | null = null;
+  selectedCreatedDate: Date | null = null;
+  selectedUpdatedDate: Date | null = null;
   
   /**
    * Загружаем список фильмов и жанров при открытии страницы
@@ -60,12 +79,10 @@ export class MovieListComponent implements OnInit, OnDestroy {
     this.movieS.getMovies().subscribe(movies => {
       this.movies = movies;
       this.filteredMovies = movies;
+      const years = movies.map((movie) => movie.releaseYear);
+      this.releaseYears = Array.from(new Set(years)).sort((a, b) => b - a);
     });
     this.genres = this.movieS.getGenresArray();
-  }
-  
-  ngOnDestroy() {
-  
   }
   
   /**
@@ -81,7 +98,12 @@ export class MovieListComponent implements OnInit, OnDestroy {
    * После закрытия модального окна добавляется новый фильм
    */
   openAddMovie() {
-    const dialogRef = this.dialog.open(ModalAddMovieComponent, { width: '600px' });
+    const dialogRef = this.dialog.open(ModalAddMovieComponent,
+      {
+        width: '600px',
+        maxHeight: '90vh',
+        autoFocus: false,
+      });
     dialogRef.afterClosed().subscribe((newMovie: Movie) => {
       if (newMovie) {
         this.movieS.addMovie(newMovie);
@@ -104,22 +126,33 @@ export class MovieListComponent implements OnInit, OnDestroy {
   }
   
   /**
-   * Фильтруем список фильмов на основе поиска
+   * Проверяем, совпадают ли две даты (время игнорируем)
+   * @param date1 - Первая дата для сравнения
+   * @param date2 - Вторая дата для сравнения
    */
-  onSearch() {
-    this.applyFilters();
+  sameDay(date1: Date, date2: Date): boolean {
+    return date1.toDateString() === date2.toDateString();
   }
   
   /**
-   * Добавляем или удаляем жанр
+   * Очистка инпутов фильтрации
+   * @param filterName - "тип" инпута
+   * @param event
    */
-  toggleGenre(genreId: number) {
-    if (this.selectedGenres.has(genreId)) {
-      this.selectedGenres.delete(genreId);
-    } else {
-      this.selectedGenres.add(genreId);
+  clearFilter(filterName: FilterType, event: MouseEvent) {
+    event.stopPropagation();
+    switch (filterName) {
+      case 'year':
+        this.selectedYear = null;
+        break;
+      case 'createdDate':
+        this.selectedCreatedDate = null;
+        break;
+      case 'updatedDate':
+        this.selectedUpdatedDate = null;
+        break;
     }
-    this.applyFilters(); // Вызываем фильтрацию из инпута
+    this.applyFilters();
   }
   
   /**
@@ -137,13 +170,20 @@ export class MovieListComponent implements OnInit, OnDestroy {
         movie.actors.some((actor) => actor.toLowerCase().includes(searchFilter)) ||
         (movie.annotation && movie.annotation.toLowerCase().includes(searchFilter));
       
-      const matchesGenres =
-        this.selectedGenres.size === 0 ||
-        movie.genre.some(genre => { // Есть ли хотя бы один жанр фильма, который соответствует выбранным жанрам
-          const genreId = this.movieS.getGenreIdByName(genre);
-          return genreId !== undefined && this.selectedGenres.has(genreId);
+      const matchesGenre =
+        !this.selectedGenres.length || // Если нет выбранных жанров, условие выполнится
+        movie.genre.some((g) => {
+          const genreId = this.movieS.getGenreIdByName(g); // Получаем ID жанра
+          return genreId !== undefined && this.selectedGenres.includes(genreId); // Проверяем, есть ли жанр в выбранных
         });
-      return matchesSearch && matchesGenres;
+      
+      const matchesYear = !this.selectedYear || movie.releaseYear === this.selectedYear;
+      const matchesCreatedDate = !this.selectedCreatedDate || this.sameDay(new Date(movie.createdYear), this.selectedCreatedDate);
+      const matchesUpdatedDate = !this.selectedUpdatedDate || this.sameDay(new Date(movie.updatedYear), this.selectedUpdatedDate);
+      
+      return matchesSearch && matchesGenre && matchesYear && matchesCreatedDate && matchesUpdatedDate;
     });
   }
 }
+
+export type FilterType = 'year' | 'createdDate' | 'updatedDate';

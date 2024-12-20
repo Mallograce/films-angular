@@ -6,6 +6,10 @@
   "MovieSearch": "Movie Search",
   "InputPlaceholder": "Enter the name, director or actor",
   "ChangeLanguage": "Change Language",
+  "GenreFilter": "Choose Genre",
+  "YearFilter": "Choose a year",
+  "CreatedDateFilter": "Created date",
+  "UpdatedDateFilter": "Updated date",
   "modal": {
     "editName": "Edit movie",
     "addName": "Add new movie",

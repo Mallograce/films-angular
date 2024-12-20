@@ -15,6 +15,8 @@ import { MatButton } from '@angular/material/button';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatOption, MatSelect } from '@angular/material/select';
+import { MovieService } from '../../../core/services/movie/movie.service';
 
 @Component({
   selector: 'app-modal-add-movie',
@@ -31,7 +33,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     MatLabel,
     TranslatePipe,
     MatProgressSpinner,
-    MatError
+    MatError,
+    MatSelect,
+    MatOption,
   ],
   templateUrl: './modal-add-movie.component.html',
   styleUrl: './modal-add-movie.component.scss'
@@ -43,6 +47,7 @@ export class ModalAddMovieComponent implements OnInit {
   constructor(
     private matSnackBar: MatSnackBar,
     private translateS: TranslateService,
+    private movieS: MovieService,
     private dialogRef: MatDialogRef<ModalAddMovieComponent>,
     @Inject(MAT_DIALOG_DATA) public data: Partial<Movie> | null
   ) {}
@@ -54,6 +59,9 @@ export class ModalAddMovieComponent implements OnInit {
   isEditMode: boolean = false; // Флаг для изменения кнопки модалки (save, edit)
   isUploading: boolean = false; // Флаг для отображения спиннера
   
+  genres: { id: number; name: string }[] = [];
+  selectedGenres: number[] = [];
+  
   ngOnInit(): void {
     /**
      * Если происходит передача данных при редактировании фильма,
@@ -61,11 +69,17 @@ export class ModalAddMovieComponent implements OnInit {
      */
     if (this.data) {
       this.newMovie = { ...this.data };
-      this.genreInput = this.data.genre?.join(', ') || '';
+      if (this.data.genre) {
+        this.selectedGenres = this.data.genre.map(
+          genre => this.movieS.getGenreIdByName(genre))
+          .filter((id) => id !== undefined) as number[];
+      }
       this.actorsInput = this.data.actors?.join(', ') || '';
       this.imageFile = this.data.image || '';
       this.isEditMode = true;
     }
+    
+    this.genres = this.movieS.getGenresArray();
   }
   
   /**
@@ -75,7 +89,7 @@ export class ModalAddMovieComponent implements OnInit {
   get isFormValid() {
     return (
       this.newMovie.title && this.newMovie.title.trim().length > 0
-      && this.genreInput && this.genreInput.trim().length > 0
+      && this.selectedGenres.length > 0
       && this.newMovie.director && this.newMovie.director.trim().length > 0
       && this.actorsInput && this.actorsInput.trim().length > 0
     )
@@ -109,7 +123,9 @@ export class ModalAddMovieComponent implements OnInit {
    * Формируется объект фильма, показывается уведомление через matSnackBar
    */
   onAddMovie() {
-    this.newMovie.genre = this.genreInput.split(',').map(word => word.trim());
+    this.newMovie.genre = this.selectedGenres.map(
+      id => this.genres.find(genre => genre.id === id)?.name || ''
+    );
     this.newMovie.actors = this.actorsInput.split(',').map(word => word.trim());
     this.newMovie.image = this.imageFile;
     this.newMovie.createdYear = new Date();
@@ -131,7 +147,9 @@ export class ModalAddMovieComponent implements OnInit {
    * Обновляется объект фильма, показывается уведомление через matSnackBar
    */
   onEditMovie() {
-    this.newMovie.genre = this.genreInput.split(',').map(word => word.trim());
+    this.newMovie.genre = this.selectedGenres.map(
+      id => this.genres.find(genre => genre.id === id)?.name || ''
+    );
     this.newMovie.actors = this.actorsInput.split(',').map(word => word.trim());
     this.newMovie.updatedYear = new Date();
     this.matSnackBar.dismiss();

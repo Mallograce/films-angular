@@ -44,6 +44,8 @@ export class MovieItemComponent {
 		const dialogRef = this.dialog.open(ModalAddMovieComponent, {
 			data: this.movie,
 			width: '600px',
+			maxHeight: '90vh',
+			autoFocus: false,
 		});
 		
 		dialogRef.afterClosed().subscribe((updatedMovie: Movie) => {

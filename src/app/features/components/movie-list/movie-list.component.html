@@ -2,12 +2,8 @@
     <!-- Боковая панель -->
     <mat-sidenav #sidenav>
         <h2>{{ 'ChangeLanguage' | translate }}</h2>
-        <button mat-button (click)="switchLanguage('ru')">
-            {{ 'Russian' | translate }}
-        </button>
-        <button mat-button (click)="switchLanguage('en')">
-            {{ 'English' | translate }}
-        </button>
+        <button mat-button (click)="switchLanguage('ru')">{{ 'Russian' | translate }}</button>
+        <button mat-button (click)="switchLanguage('en')">{{ 'English' | translate }}</button>
     </mat-sidenav>
 
     <mat-sidenav-content>
@@ -17,45 +13,133 @@
                     <mat-icon>menu</mat-icon>
                 </button>
             </div>
+
             <div class="content-section">
-                <div class="header">
+                <!-- Поиск -->
+                <div class="search-container">
                     <mat-form-field appearance="outline" class="search-input">
                         <mat-label>{{ 'MovieSearch' | translate }}</mat-label>
-                        <input matInput [(ngModel)]="searchTerm" (input)="onSearch()"
-                               placeholder="{{ 'InputPlaceholder' | translate }}"/>
+                        <input
+                                matInput
+                                [(ngModel)]="searchTerm"
+                                (input)="applyFilters()"
+                                placeholder="{{ 'InputPlaceholder' | translate }}"
+                        />
                     </mat-form-field>
-
-                    <!-- Список жанров -->
-                    <mat-chip-listbox class="genre-filter"
-                                      [multiple]="true"
-                                      [(ngModel)]="selectedGenres">
-                        <mat-chip *ngFor="let genre of genres"
-                                  [value]="genre.id"
-                                  (click)="toggleGenre(genre.id)"
-                                  [class.active]="selectedGenres.has(genre.id)"
-                                  class="genre-chip">
-                            {{ genre.name | translate }}
-                            @if (selectedGenres.has(genre.id)) {
-                                <mat-icon class="chip-icon">done</mat-icon>
-                            }
-                        </mat-chip>
-                    </mat-chip-listbox>
-                    <mat-divider class="genre-divider"></mat-divider>
                 </div>
 
+                <!-- Фильтры -->
+                <div class="filters-container">
+                    <!-- Фильтрация по жанрам -->
+                    <mat-form-field appearance="outline" class="filter-field">
+                        <mat-label>{{ 'GenreFilter' | translate }}</mat-label>
+                        <mat-select
+                                [(value)]="selectedGenres"
+                                multiple
+                                (selectionChange)="applyFilters()"
+                        >
+                            @for (genre of genres; track genre.id) {
+                                <mat-option [value]="genre.id">
+                                    {{ genre.name | translate }}
+                                </mat-option>
+                            }
+                        </mat-select>
+                    </mat-form-field>
+
+                    <!-- Фильтрация по году выпуска -->
+                    <mat-form-field appearance="outline" class="filter-field">
+                        <mat-label>{{ 'YearFilter' | translate }}</mat-label>
+                        <mat-select [(value)]="selectedYear" (selectionChange)="applyFilters()">
+                            @for (year of releaseYears; track year) {
+                                <mat-option [value]="year">
+                                    {{ year }}
+                                </mat-option>
+                            }
+                        </mat-select>
+                        @if (selectedYear) {
+                            <button
+                                    mat-icon-button
+                                    class="clear-button"
+                                    (click)="clearFilter('year', $event)"
+                            >
+                                <mat-icon>clear</mat-icon>
+                            </button>
+                        }
+                    </mat-form-field>
+
+                    <!-- Фильтрация по дате добавления -->
+                    <mat-form-field appearance="outline" class="filter-field">
+                        <mat-label>{{ 'CreatedDateFilter' | translate }}</mat-label>
+                        <input
+                                matInput
+                                [matDatepicker]="createdDatePicker"
+                                [(ngModel)]="selectedCreatedDate"
+                                (ngModelChange)="applyFilters()"
+                                (click)="createdDatePicker.open()"
+                        />
+                        @if (!selectedCreatedDate) {
+                            <mat-datepicker-toggle
+                                    matSuffix
+                                    class="datepicker-toggle"
+                                    [for]="createdDatePicker"
+                            ></mat-datepicker-toggle>
+                        }
+                        @if (selectedCreatedDate) {
+                            <button
+                                    mat-icon-button
+                                    class="clear-button"
+                                    (click)="clearFilter('createdDate', $event)"
+                            >
+                                <mat-icon>clear</mat-icon>
+                            </button>
+                        }
+                        <mat-datepicker #createdDatePicker></mat-datepicker>
+                    </mat-form-field>
+
+                    <!-- Фильтрация по дате обновления -->
+                    <mat-form-field appearance="outline" class="filter-field">
+                        <mat-label>{{ 'UpdatedDateFilter' | translate }}</mat-label>
+                        <input
+                                matInput
+                                [matDatepicker]="updatedDatePicker"
+                                [(ngModel)]="selectedUpdatedDate"
+                                (ngModelChange)="applyFilters()"
+                                (click)="updatedDatePicker.open()"
+                        />
+                        @if (!selectedUpdatedDate) {
+                            <mat-datepicker-toggle
+                                    matSuffix
+                                    class="datepicker-toggle"
+                                    [for]="updatedDatePicker"
+                            ></mat-datepicker-toggle>
+                        }
+                        @if (selectedUpdatedDate) {
+                            <button
+                                    mat-icon-button
+                                    class="clear-button"
+                                    (click)="clearFilter('updatedDate', $event)"
+                            >
+                                <mat-icon>clear</mat-icon>
+                            </button>
+                        }
+
+                        <mat-datepicker #updatedDatePicker></mat-datepicker>
+                    </mat-form-field>
+                </div>
+
+                <!-- Карточки фильмов -->
                 <div class="movies-grid">
                     <div class="add-movie-card" (click)="openAddMovie()">
                         <mat-icon class="add-icon">add</mat-icon>
                         <p>{{ 'AddNewMovie' | translate }}</p>
                     </div>
 
-                    <!-- Карточки фильмов -->
                     @for (movie of filteredMovies; track movie) {
                         <app-movie-item
                                 [movie]="movie"
                                 (delete)="deleteMovie(movie.id)"
-                                (edit)="editMovie($event)">
-                        </app-movie-item>
+                                (edit)="editMovie($event)"
+                        ></app-movie-item>
                     }
                 </div>
             </div>

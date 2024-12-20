@@ -6,6 +6,10 @@
   "MovieSearch": "Поиск фильмов",
   "InputPlaceholder": "Введите название, режиссера или актера",
   "ChangeLanguage": "Изменить язык",
+  "GenreFilter": "Выберите жанр",
+  "YearFilter": "Выберите год",
+  "CreatedDateFilter": "Дата создания",
+  "UpdatedDateFilter": "Дата обновления",
   "modal": {
     "editName": "Изменить фильм",
     "addName": "Добавить новый фильм",
